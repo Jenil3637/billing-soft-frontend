@@ -1,8 +1,6 @@
 
 
-import { Download, Search, Filter } from "lucide-react";
-
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 const OrderHistory = () => {
   const [orders] = useState([
@@ -25,95 +23,56 @@ const OrderHistory = () => {
     // Add more order data as needed
   ]);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "completed":
-        return "text-indigo-600";
-      case "pending":
-        return "text-yellow-600";
-      case "cancelled":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
-  const filteredOrders = orders.filter(
-    (order) =>
-      order.id.includes(searchTerm) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrders = orders.filter((order) =>
+    order.customer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleExport = () => {
+    // Placeholder for export functionality
+    console.log('Exporting orders...');
+  };
+
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-center p-4">
-        <h1 className="text-2xl font-bold text-black mb-4 sm:mb-0">Order History</h1>
-        <button className="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
-          <Download size={20} />
-          <span className="text-black">Export</span>
-        </button>
+    <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-semibold mb-4">Order History</h2>
+
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            placeholder="Search by customer"
+            className="p-2 border border-gray-300 rounded w-64"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            onClick={handleExport}
+            className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-900"
+          >
+            Export
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 bg-white rounded-lg shadow-sm ">
-        <div className="p-4 border-b">
-          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-            <div className="relative flex-1">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder="Search orders..."
-                className="w-full pl-10 pr-4 py-2 border rounded-lg"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <button className="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
-              <Filter size={20} />
-              <span className="text-black">Filter</span>
-            </button>
+      <div className="order-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredOrders.map((order) => (
+          <div
+            key={order.id}
+            className="order-card border p-4 rounded shadow-md bg-white"
+          >
+            <h3 className="text-lg font-semibold mb-2">Order {order.id}</h3>
+            <p><strong>Customer:</strong> {order.customer}</p>
+            <p><strong>Date:</strong> {order.date}</p>
+            <p><strong>Items:</strong> {order.items.join(', ')}</p>
+            <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
+            <p><strong>Status:</strong> <span className={`status-${order.status}`}>{order.status}</span></p>
           </div>
-        </div>
-
-        <div className="space-y-4 md:space-y-6 p-4 max-h-[50vh]">
-          {filteredOrders.map((order) => (
-            <div key={order.id} className="border p-4 rounded-lg shadow-md">
-              <div className="flex flex-col sm:flex-row justify-between mb-4">
-                <div className="text-lg font-semibold">{order.id}</div>
-                <div
-                  className={`px-3 py-1 text-sm rounded-full capitalize ${getStatusColor(order.status)}`}
-                >
-                  {order.status}
-                </div>
-              </div>
-              <div className="mb-2">
-                <strong>Customer: </strong>
-                <span>{order.customer}</span>
-              </div>
-              <div className="mb-2">
-                <strong>Date: </strong>
-                <span>{order.date}</span>
-              </div>
-              <div className="mb-2">
-                <strong>Items: </strong>
-                <span>{order.items.join(", ")}</span>
-              </div>
-              <div className="mb-2">
-                <strong>Total: </strong>
-                <span>${order.total.toFixed(2)}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );
 };
 
 export default OrderHistory;
-
-
