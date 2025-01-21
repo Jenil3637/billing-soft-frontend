@@ -159,33 +159,39 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const RealTimeOrders = () => {
-  const [orders, setOrders] = useState([]); // Ensure initial state is an array
+  const [orders, setOrders] = useState([]);
   const [pendingOrders, setPendingOrders] = useState([]);
 
-  // Fetch cart data from the API
-  useEffect(() => {
-    const fetchCartData = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/v1/customer/carts');
-        const cartData = response.data.carts; // Access the carts array from the response
-
-        // Check if cartData is an array
-        if (Array.isArray(cartData)) {
-          setOrders(cartData);
-        } else {
-          console.error('API response does not contain an array of carts:', cartData);
-        }
-      } catch (error) {
-        console.error('Error fetching cart data:', error);
+  // Function to fetch cart data
+  const fetchCartData = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/v1/customer/carts');
+      const cartData = response.data.carts;
+      if (Array.isArray(cartData)) {
+        setOrders(cartData);
+      } else {
+        console.error('API response does not contain an array of carts:', cartData);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching cart data:', error);
+    }
+  };
 
-    fetchCartData();
-  }, []);
+  // Fetch data on mount
+  useEffect(() => {
+    fetchCartData(); // Fetch data once on mount
+
+    // Set polling interval (e.g., every 5 seconds)
+    const interval = setInterval(fetchCartData, 5000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array means this runs only once on mount
 
   const handleAcceptClick = (order) => {
     setOrders(orders.filter((o) => o._id !== order._id));
@@ -194,13 +200,8 @@ const RealTimeOrders = () => {
 
   const handleDeclineClick = async (order) => {
     try {
-      // Send DELETE request to delete the cart
       await axios.delete(`http://localhost:5000/api/v1/customer/carts/${order._id}`);
-      
-      // Remove the deleted order from the state
       setOrders(orders.filter((o) => o._id !== order._id));
-
-      console.log('Order deleted successfully');
     } catch (error) {
       console.error('Error deleting order:', error);
     }
@@ -208,15 +209,11 @@ const RealTimeOrders = () => {
 
   const handleDoneClick = async (order) => {
     try {
-      // Send DELETE request to move the order to order history and delete from real-time orders
       const response = await axios.delete(`http://localhost:5000/api/v1/customer/carts/move-to-history/${order._id}`);
-
       if (response.status === 200) {
-        // Remove the order from the pending orders list
         setPendingOrders(pendingOrders.filter((o) => o._id !== order._id));
-        console.log('Order moved to order history and deleted from real-time orders');
       } else {
-        console.error('Failed to move order to history: ', response.data);
+        console.error('Failed to move order to history:', response.data);
       }
     } catch (error) {
       console.error('Error moving order to order history:', error);
@@ -244,20 +241,13 @@ const RealTimeOrders = () => {
           <p className="text-sm text-gray-600">Phone: {order.phoneNumber}</p>
         </div>
       </div>
-  
       {order.items.map((item, index) => (
         <p key={index} className="text-xs text-gray-500">
           {item.name}: {item.quantity}
         </p>
       ))}
-  
-      <p className="text-xs font-semibold mt-2">
-        Total Quantity: {calculateTotalQuantity(order.items)}
-      </p>
-      <p className="text-xs font-semibold">
-        Total Price: ₹{calculateTotalPrice(order.items)}
-      </p>
-  
+      <p className="text-xs font-semibold mt-2">Total Quantity: {calculateTotalQuantity(order.items)}</p>
+      <p className="text-xs font-semibold">Total Price: ₹{calculateTotalPrice(order.items)}</p>
       <div className="flex space-x-3 mt-4">
         {actions.map((action, index) => (
           <button
