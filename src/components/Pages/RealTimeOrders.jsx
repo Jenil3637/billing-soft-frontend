@@ -170,7 +170,7 @@ const RealTimeOrders = () => {
   // Function to fetch cart data
   const fetchCartData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/customer/carts');
+      const response = await axios.get('https://baattak.onrender.com/api/v1/customer/carts');
       const cartData = response.data.carts;
       if (Array.isArray(cartData)) {
         setOrders(cartData);
@@ -200,7 +200,7 @@ const RealTimeOrders = () => {
 
   const handleDeclineClick = async (order) => {
     try {
-      await axios.delete(`http://localhost:5000/api/v1/customer/carts/${order._id}`);
+      await axios.delete(`https://baattak.onrender.com/api/v1/customer/carts/${order._id}`);
       setOrders(orders.filter((o) => o._id !== order._id));
     } catch (error) {
       console.error('Error deleting order:', error);
@@ -209,7 +209,7 @@ const RealTimeOrders = () => {
 
   const handleDoneClick = async (order) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/v1/customer/carts/move-to-history/${order._id}`);
+      const response = await axios.delete(`hhttps://baattak.onrender.com/api/v1/customer/carts/move-to-history/${order._id}`);
       if (response.status === 200) {
         setPendingOrders(pendingOrders.filter((o) => o._id !== order._id));
       } else {

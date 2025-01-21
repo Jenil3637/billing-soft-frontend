@@ -32,34 +32,50 @@ const Customers = () => {
   };
 
   const handleAddCustomer = async (e) => {
-    e.preventDefault(); // Prevent page reload on form submission
-
+    e.preventDefault();
+  
     try {
-      const response = await axios.post('http://localhost:5000/api/v1/customer/register', formData);
-      await fetchCustomers(); // Re-fetch the customers after successful add
-      handleCloseModal(); // Close modal after successful add
+      if (editingCustomer) {
+        // If we are editing an existing customer, make a PUT request
+        const response = await axios.put(
+          `http://localhost:5000/api/v1/customer/edit/${editingCustomer._id}`,
+          formData
+        );
+        console.log('Customer updated:', response.data);
+      } else {
+        // If we are adding a new customer, make a POST request
+        const response = await axios.post('http://localhost:5000/api/v1/customer/register', formData);
+        console.log('Customer added:', response.data);
+      }
+  
+      await fetchCustomers(); // Re-fetch the customer list after add or update
+      handleCloseModal(); // Close modal after add or update
     } catch (error) {
-      console.error('Error adding customer:', error);
+      console.error('Error adding or updating customer:', error);
     }
   };
 
   const handleEdit = (customer) => {
-    setEditingCustomer(customer); // Make sure to set the editingCustomer
+    setEditingCustomer(customer); // Set the customer to edit
     setFormData({
       username: customer.username,
       email: customer.email,
       phoneNumber: customer.phoneNumber,
     });
-    setIsModalOpen(true);
+    setIsModalOpen(true); // Open the modal for editing
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
+      if (!showDeleteConfirm) return;
+      const id = showDeleteConfirm; // Get the customer id from delete confirmation
       const response = await axios.delete(
         `http://localhost:5000/api/v1/customer/delete/${id}`
       );
-      // Update the customer list to remove the deleted customer
-      setCustomers(customers.filter((c) => c._id !== id));
+      console.log('Delete response:', response.data); // Check the response from the backend
+
+      // After successful delete, update the customers state
+      setCustomers(customers.filter((customer) => customer._id !== id));
       setShowDeleteConfirm(null); // Close the delete confirmation modal
     } catch (error) {
       console.error('Error deleting customer:', error);
@@ -208,7 +224,34 @@ const Customers = () => {
         ))}
       </div>
 
-      {/* Modal */}
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 md:p-6 relative">
+            <h2 className="text-xl font-bold text-gray-800 mb-6">
+              Are you sure you want to delete this customer?
+            </h2>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(null)} // Cancel
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Add/Edit */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 md:p-6 relative">
@@ -224,48 +267,36 @@ const Customers = () => {
             <form onSubmit={handleAddCustomer} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    required
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className="pl-10 w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter name"
-                  />
-                </div>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    required
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="pl-10 w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter email"
-                  />
-                </div>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    required
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    className="pl-10 w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter phone number"
-                  />
-                </div>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button
@@ -279,7 +310,7 @@ const Customers = () => {
                   type="submit"
                   className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
-                  {editingCustomer ? 'Update Customer' : 'Add Customer'}
+                  {editingCustomer ? 'Update' : 'Add'}
                 </button>
               </div>
             </form>
