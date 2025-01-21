@@ -1,59 +1,88 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
+import axios from 'axios';
 
 const MenuEditor = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Chicken Biryani",
-      price: 12.99,
-      category: "Main Course",
-      image:
-        "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500",
-    },
-    {
-      id: 2,
-      name: "Butter Naan",
-      price: 2.99,
-      category: "Breads",
-      image:
-        "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500",
-    },
-    {
-      id: 3,
-      name: "Paneer Tikka",
-      price: 10.99,
-      category: "Starters",
-      image:
-        "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=500",
-    },
-  ]);
-
+  const [items, setItems] = useState([]);
   const [editItem, setEditItem] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [image, setImage] = useState(null);
 
-  const categories = ["Starters", "Main Course", "Breads", "Desserts", "Beverages"];
+  const categories = ["favorites", "Drinks", "Lunch", "Combo", "Sweet"];
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newItem = {
-      id: editItem ? editItem.id : Date.now(),
-      name: formData.get("name"),
-      category: formData.get("category"),
-      price: parseFloat(formData.get("price")),
-      image: formData.get("image"),
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/v1/customer/menuItems');
+        setItems(response.data); // Assuming the response contains the array of items
+      } catch (error) {
+        console.error("Error fetching menu items:", error);
+      }
     };
 
-    if (editItem) {
-      setItems(items.map((item) => (item.id === editItem.id ? newItem : item)));
-    } else {
-      setItems([...items, newItem]);
-    }
+    fetchMenuItems();
+  }, []);
 
-    setEditItem(null);
-    setShowForm(false);
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
   };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+  
+    // Append the image file if selected
+    if (image) {
+      formData.append("image", image);
+    }
+  
+    formData.append("name", e.target.name.value);
+    formData.append("category", e.target.category.value);
+    formData.append("price", parseFloat(e.target.price.value));
+  
+    try {
+      const newItem = {
+        id: editItem ? editItem.id : Date.now(),
+        name: e.target.name.value,
+        category: e.target.category.value,
+        price: parseFloat(e.target.price.value),
+        imageUrl: formData.get("imageUrl"), // Ensure the image URL is correctly handled by the server
+      };
+  
+      const response = await axios.post('http://localhost:5000/api/v1/customer/menu', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+  
+      const savedItem = response.data;
+      if (editItem) {
+        setItems(items.map((item) => (item.id === editItem.id ? savedItem : item)));
+      } else {
+        setItems([...items, savedItem]);
+      }
+  
+      setEditItem(null);
+      setShowForm(false);
+    } catch (error) {
+      console.error("Error saving item:", error.response || error.message);
+      alert('Failed to save item! Please check the data.');
+    }
+  };
+  
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/v1/customer/menu/delete/${id}`);
+      // Filter out the deleted item from the list
+      setItems(items.filter((item) => item.id !== id));
+      console.log('Item deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Failed to delete item!');
+    }
+  };
+  
 
   return (
     <div className="p-6 sm:p-8 bg-gray-50 overflow-auto">
@@ -73,9 +102,9 @@ const MenuEditor = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item) => (
-          <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div key={item._id} className="bg-white rounded-lg shadow-md overflow-hidden">
             <img
-              src={item.image}
+              src={item.imageUrl} // Corrected image field to match the model
               alt={item.name}
               className="w-full h-48 object-cover"
             />
@@ -99,9 +128,7 @@ const MenuEditor = () => {
                     <Edit2 size={16} />
                   </button>
                   <button
-                    onClick={() =>
-                      setItems(items.filter((i) => i.id !== item.id))
-                    }
+                    onClick={() => handleDelete(item._id)} // Call handleDelete when deleting
                     className="p-2 text-red-600 hover:bg-red-50 rounded-full"
                   >
                     <Trash2 size={16} />
@@ -119,7 +146,7 @@ const MenuEditor = () => {
             <h2 className="text-xl font-semibold mb-4">
               {editItem ? "Edit Item" : "Add New Item"}
             </h2>
-            <form onSubmit={handleFormSubmit} className="space-y-4">
+            <form onSubmit={handleFormSubmit} className="space-y-4" encType="multipart/form-data">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Name
@@ -163,14 +190,13 @@ const MenuEditor = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+                  Image Upload
                 </label>
                 <input
-                  type="url"
+                  type="file"
                   name="image"
-                  defaultValue={editItem?.image || ""}
+                  onChange={handleImageChange}
                   className="w-full p-2 border rounded-lg"
-                  required
                 />
               </div>
               <div className="flex space-x-4 pt-4">
