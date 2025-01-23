@@ -1,38 +1,47 @@
-
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const OrderHistory = () => {
-  const [orders] = useState([
-    {
-      id: "#1001",
-      customer: "John Doe",
-      date: "2024-02-20 14:30",
-      items: ["Chicken Biryani", "Butter Naan"],
-      total: 45.8,
-      status: "completed",
-    },
-    {
-      id: "#1002",
-      customer: "Jane Smith",
-      date: "2024-02-20 15:15",
-      items: ["Paneer Tikka", "Mango Lassi"],
-      total: 28.5,
-      status: "completed",
-    },
-    // Add more order data as needed
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [searchQuery, setSearchQuery] = useState('');
+  // Fetch order histories from the API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/v1/customer/orderHistories"
+        );
+        setOrders(response.data); // Assuming response data is an array
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch orders.");
+        setLoading(false);
+      }
+    };
 
+    fetchOrders();
+  }, []);
+
+  // Filter orders based on search query
   const filteredOrders = orders.filter((order) =>
-    order.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    order.user.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleExport = () => {
     // Placeholder for export functionality
-    console.log('Exporting orders...');
+    console.log("Exporting orders...");
   };
+
+  if (loading) {
+    return <p className="text-center">Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -59,15 +68,33 @@ const OrderHistory = () => {
       <div className="order-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredOrders.map((order) => (
           <div
-            key={order.id}
+            key={order._id} // Use the MongoDB `_id` as a unique key
             className="order-card border p-4 rounded shadow-md bg-white"
           >
-            <h3 className="text-lg font-semibold mb-2">Order {order.id}</h3>
-            <p><strong>Customer:</strong> {order.customer}</p>
-            <p><strong>Date:</strong> {order.date}</p>
-            <p><strong>Items:</strong> {order.items.join(', ')}</p>
-            <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
-            <p><strong>Status:</strong> <span className={`status-${order.status}`}>{order.status}</span></p>
+            <h3 className="text-lg font-semibold mb-2">Order #{order._id}</h3>
+            <p>
+              <strong>Customer:</strong> {order.user}
+            </p>
+            <p>
+              <strong>Phone:</strong> {order.phoneNumber}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {new Date(order.createdAt).toLocaleString()}
+            </p>
+            <p>
+              <strong>Items:</strong>{" "}
+              {order.items.map((item) => `${item.name} (${item.quantity})`).join(", ")}
+            </p>
+            <p>
+              <strong>Total Quantity:</strong> {order.totalQuantity}
+            </p>
+            <p>
+              <strong>Total Price:</strong> ₹{order.totalPrice.toFixed(2)}
+            </p>
+            <p>
+              <strong>Status:</strong> <span className={`status-completed`}>completed</span>
+            </p>
           </div>
         ))}
       </div>

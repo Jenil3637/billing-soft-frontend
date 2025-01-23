@@ -37,15 +37,13 @@ const Customers = () => {
     try {
       if (editingCustomer) {
         // If we are editing an existing customer, make a PUT request
-        const response = await axios.put(
+        await axios.put(
           `http://localhost:5000/api/v1/customer/edit/${editingCustomer._id}`,
           formData
         );
-        console.log('Customer updated:', response.data);
       } else {
         // If we are adding a new customer, make a POST request
-        const response = await axios.post('http://localhost:5000/api/v1/customer/register', formData);
-        console.log('Customer added:', response.data);
+        await axios.post('http://localhost:5000/api/v1/customer/register', formData);
       }
   
       await fetchCustomers(); // Re-fetch the customer list after add or update
@@ -69,10 +67,9 @@ const Customers = () => {
     try {
       if (!showDeleteConfirm) return;
       const id = showDeleteConfirm; // Get the customer id from delete confirmation
-      const response = await axios.delete(
+      await axios.delete(
         `http://localhost:5000/api/v1/customer/delete/${id}`
       );
-      console.log('Delete response:', response.data); // Check the response from the backend
 
       // After successful delete, update the customers state
       setCustomers(customers.filter((customer) => customer._id !== id));
@@ -288,7 +285,7 @@ const Customers = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="text"
                   name="phoneNumber"
@@ -301,7 +298,7 @@ const Customers = () => {
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={handleCloseModal}
+                  onClick={handleCloseModal} // Cancel
                   className="text-gray-500 hover:text-gray-700"
                 >
                   Cancel
@@ -310,7 +307,7 @@ const Customers = () => {
                   type="submit"
                   className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
-                  {editingCustomer ? 'Update' : 'Add'}
+                  {editingCustomer ? 'Update Customer' : 'Add Customer'}
                 </button>
               </div>
             </form>
