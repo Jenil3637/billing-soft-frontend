@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RealTimeOrders = () => {
   const [orders, setOrders] = useState([]); // Real-time orders
@@ -9,7 +11,9 @@ const RealTimeOrders = () => {
   // Fetch cart data from the API
   const fetchCartData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/customer/carts');
+      const response = await axios.get(
+        "http://localhost:5000/api/v1/customer/carts"
+      );
       const cartData = response.data.carts;
 
       if (Array.isArray(cartData)) {
@@ -21,15 +25,15 @@ const RealTimeOrders = () => {
         if (newOrders.length > 0) {
           // Update state with new orders
           setOrders((prevOrders) => [...prevOrders, ...newOrders]);
-          
+
           // Mark these cart IDs as processed
           newOrders.forEach((order) => processedCartIds.current.add(order._id));
         }
       } else {
-        console.error('API response does not contain an array of carts:', cartData);
+        console.error("API response does not contain an array of carts:", cartData);
       }
     } catch (error) {
-      console.error('Error fetching cart data:', error.message);
+      console.error("Error fetching cart data:", error.message);
     }
   };
 
@@ -44,19 +48,24 @@ const RealTimeOrders = () => {
     setOrders((prevOrders) => prevOrders.filter((o) => o._id !== order._id));
     setPendingOrders((prevPendingOrders) => [
       ...prevPendingOrders,
-      { ...order, status: 'Pending' },
+      { ...order, status: "Pending" },
     ]);
+    toast.success(`Order accepted for ${order.user}!`);
   };
 
   // Handle Decline action
   const handleDeclineClick = async (order) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/v1/customer/carts/${order._id}`);
+      const response = await axios.delete(
+        `http://localhost:5000/api/v1/customer/carts/${order._id}`
+      );
       if (response.status === 200) {
         setOrders((prevOrders) => prevOrders.filter((o) => o._id !== order._id));
+        toast.info(`Order declined for ${order.user}.`);
       }
     } catch (error) {
-      console.error('Error deleting order:', error.message);
+      console.error("Error deleting order:", error.message);
+      toast.error("Failed to decline order.");
     }
   };
 
@@ -71,9 +80,11 @@ const RealTimeOrders = () => {
         setPendingOrders((prevPendingOrders) =>
           prevPendingOrders.filter((o) => o._id !== order._id)
         );
+        toast.success(`Order for ${order.user} marked as done!`);
       }
     } catch (error) {
-      console.error('Error moving order to history:', error.message);
+      console.error("Error moving order to history:", error.message);
+      toast.error("Failed to mark order as done.");
     }
   };
 
@@ -82,7 +93,8 @@ const RealTimeOrders = () => {
     setPendingOrders((prevPendingOrders) =>
       prevPendingOrders.filter((o) => o._id !== order._id)
     );
-    setOrders((prevOrders) => [...prevOrders, { ...order, status: 'Real-Time' }]);
+    setOrders((prevOrders) => [...prevOrders, { ...order, status: "Real-Time" }]);
+    toast.info(`Order for ${order.user} resent to real-time queue.`);
   };
 
   // Helper functions to calculate totals
@@ -123,9 +135,12 @@ const RealTimeOrders = () => {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-6 flex flex-wrap justify-between gap-6">
+    <div className="min-h-screen p-4 md:p-6 flex flex-col sm:flex-row gap-6">
+      {/* Toast Container */}
+      <ToastContainer />
+
       {/* Real-Time Orders Section */}
-      <div className="w-full sm:w-2/5 mb-6 sm:mb-0">
+      <div className="w-full sm:w-1/2 lg:w-2/5">
         <h1 className="text-xl md:text-2xl font-bold text-black mb-4">Real-Time Orders</h1>
         <div className="space-y-4">
           {orders.length > 0 ? (
@@ -135,14 +150,14 @@ const RealTimeOrders = () => {
                 order={order}
                 actions={[
                   {
-                    label: 'Accept',
+                    label: "Accept",
                     onClick: handleAcceptClick,
-                    className: 'bg-blue-600 hover:bg-blue-700',
+                    className: "bg-blue-600 hover:bg-blue-700",
                   },
                   {
-                    label: 'Decline',
+                    label: "Decline",
                     onClick: handleDeclineClick,
-                    className: 'bg-gray-600 hover:bg-gray-700',
+                    className: "bg-gray-600 hover:bg-gray-700",
                   },
                 ]}
               />
@@ -154,7 +169,7 @@ const RealTimeOrders = () => {
       </div>
 
       {/* Pending Orders Section */}
-      <div className="w-full sm:w-2/5">
+      <div className="w-full sm:w-1/2 lg:w-2/5">
         <h2 className="text-xl md:text-2xl font-bold text-black mb-4">Pending Orders</h2>
         <div className="space-y-4">
           {pendingOrders.length > 0 ? (
@@ -164,14 +179,14 @@ const RealTimeOrders = () => {
                 order={order}
                 actions={[
                   {
-                    label: 'Done',
+                    label: "Done",
                     onClick: handleDoneClick,
-                    className: 'bg-green-600 hover:bg-green-700',
+                    className: "bg-green-600 hover:bg-green-700",
                   },
                   {
-                    label: 'Resend',
+                    label: "Resend",
                     onClick: handleResendClick,
-                    className: 'bg-yellow-600 hover:bg-yellow-700',
+                    className: "bg-yellow-600 hover:bg-yellow-700",
                   },
                 ]}
               />

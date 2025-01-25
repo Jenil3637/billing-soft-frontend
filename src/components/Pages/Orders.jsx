@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +20,7 @@ const Orders = () => {
         const response = await axios.get('http://localhost:5000/api/v1/customer/menuItems');
         setMenuItems(response.data);
       } catch (error) {
-        console.error('Error fetching menu items:', error);
+        toast.error('Error fetching menu items. Please try again later.');
       }
     };
 
@@ -62,11 +64,13 @@ const Orders = () => {
     } else {
       setCart([...cart, {...item, quantity: 1}]);
     }
+    toast.success(`${item.name} added to cart!`);
   };
 
   // Remove item from cart
   const removeFromCart = (itemId) => {
     setCart(cart.filter(item => item._id !== itemId));
+    toast.info('Item removed from cart.');
   };
 
   // Update cart item quantity
@@ -77,6 +81,7 @@ const Orders = () => {
       setCart(cart.map(item => 
         item._id === itemId ? {...item, quantity: newQuantity} : item
       ));
+      toast.success('Quantity updated!');
     }
   };
 
@@ -92,6 +97,7 @@ const Orders = () => {
   // Submit cart
   const submitCart = async () => {
     if (!customerName || !phoneNumber) {
+      toast.error('Please fill in your name and phone number.');
       return;
     }
 
@@ -117,8 +123,9 @@ const Orders = () => {
       localStorage.removeItem('cart');
       localStorage.removeItem('customerName');
       localStorage.removeItem('phoneNumber');
+      toast.success('Order submitted successfully!');
     } catch (error) {
-      console.error('Cart submission error:', error);
+      toast.error('Error submitting order. Please try again.');
     }
   };
 
@@ -130,10 +137,12 @@ const Orders = () => {
     localStorage.removeItem('cart');
     localStorage.removeItem('customerName');
     localStorage.removeItem('phoneNumber');
+    toast.info('Cart cleared.');
   };
 
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4">
+      <ToastContainer />
       {/* Menu Items Section */}
       <div className="w-full md:w-2/3">
         <Card>

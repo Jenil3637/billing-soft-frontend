@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import axios from 'axios';
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const MenuEditor = () => {
   const [items, setItems] = useState([]);
@@ -13,10 +15,10 @@ const MenuEditor = () => {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/v1/customer/menuItems');
+        const response = await axios.get("http://localhost:5000/api/v1/customer/menuItems");
         setItems(response.data);
       } catch (error) {
-        alert("Error fetching menu items. Please try again later.");
+        toast.error("Error fetching menu items. Please try again later.");
       }
     };
 
@@ -49,17 +51,19 @@ const MenuEditor = () => {
           `http://localhost:5000/api/v1/customer/menu/edit/${editItem._id}`,
           { ...data, imageUrl: editItem.imageUrl }
         );
+        toast.success("Item updated successfully!");
       } else {
         // Add new item
         formData.append("name", data.name);
         formData.append("category", data.category);
         formData.append("price", data.price);
 
-        response = await axios.post('http://localhost:5000/api/v1/customer/menu', formData, {
+        response = await axios.post("http://localhost:5000/api/v1/customer/menu", formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
+        toast.success("Item added successfully!");
       }
 
       const savedItem = response.data;
@@ -73,7 +77,7 @@ const MenuEditor = () => {
       setEditItem(null);
       setShowForm(false);
     } catch (error) {
-      alert('Failed to save item! Please check the data.');
+      toast.error("Failed to save item! Please check the data.");
     }
   };
 
@@ -81,13 +85,15 @@ const MenuEditor = () => {
     try {
       await axios.delete(`http://localhost:5000/api/v1/customer/menu/delete/${id}`);
       setItems(items.filter((item) => item._id !== id));
+      toast.success("Item deleted successfully!");
     } catch (error) {
-      alert('Failed to delete item!');
+      toast.error("Failed to delete item!");
     }
   };
 
   return (
     <div className="p-6 sm:p-8 bg-gray-50 overflow-auto">
+      <ToastContainer />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Menu Editor</h1>
         <button

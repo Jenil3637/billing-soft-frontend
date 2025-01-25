@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Pencil, Trash2, Search, X, User, Mail, Phone } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -19,6 +21,7 @@ const Customers = () => {
       setCustomers(response.data); // Set the fetched customers data
     } catch (error) {
       console.error('Error fetching customers:', error);
+      toast.error('Failed to fetch customers.');
     }
   };
 
@@ -33,7 +36,7 @@ const Customers = () => {
 
   const handleAddCustomer = async (e) => {
     e.preventDefault();
-  
+
     try {
       if (editingCustomer) {
         // If we are editing an existing customer, make a PUT request
@@ -41,15 +44,18 @@ const Customers = () => {
           `http://localhost:5000/api/v1/customer/edit/${editingCustomer._id}`,
           formData
         );
+        toast.success('Customer updated successfully!');
       } else {
         // If we are adding a new customer, make a POST request
         await axios.post('http://localhost:5000/api/v1/customer/register', formData);
+        toast.success('Customer added successfully!');
       }
-  
+
       await fetchCustomers(); // Re-fetch the customer list after add or update
       handleCloseModal(); // Close modal after add or update
     } catch (error) {
       console.error('Error adding or updating customer:', error);
+      toast.error('Failed to add or update customer.');
     }
   };
 
@@ -74,8 +80,10 @@ const Customers = () => {
       // After successful delete, update the customers state
       setCustomers(customers.filter((customer) => customer._id !== id));
       setShowDeleteConfirm(null); // Close the delete confirmation modal
+      toast.success('Customer deleted successfully!');
     } catch (error) {
       console.error('Error deleting customer:', error);
+      toast.error('Failed to delete customer.');
     }
   };
 
@@ -130,6 +138,8 @@ const Customers = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      <ToastContainer /> {/* Toast Container for notifications */}
+
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Customers</h1>
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
