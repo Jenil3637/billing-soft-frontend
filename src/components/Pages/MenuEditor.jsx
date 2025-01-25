@@ -15,7 +15,7 @@ const MenuEditor = () => {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/v1/customer/menuItems");
+        const response = await axios.get("https://baattak.onrender.com/api/v1/customer/menuItems");
         setItems(response.data);
       } catch (error) {
         toast.error("Error fetching menu items. Please try again later.");
@@ -48,7 +48,7 @@ const MenuEditor = () => {
       if (editItem) {
         // Update existing item
         response = await axios.put(
-          `http://localhost:5000/api/v1/customer/menu/edit/${editItem._id}`,
+          `https://baattak.onrender.com/api/v1/customer/menu/edit/${editItem._id}`,
           { ...data, imageUrl: editItem.imageUrl }
         );
         toast.success("Item updated successfully!");
@@ -58,7 +58,7 @@ const MenuEditor = () => {
         formData.append("category", data.category);
         formData.append("price", data.price);
 
-        response = await axios.post("http://localhost:5000/api/v1/customer/menu", formData, {
+        response = await axios.post("https://baattak.onrender.com/api/v1/customer/menu", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -83,7 +83,7 @@ const MenuEditor = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/v1/customer/menu/delete/${id}`);
+      await axios.delete(`https://baattak.onrender.com/api/v1/customer/menu/delete/${id}`);
       setItems(items.filter((item) => item._id !== id));
       toast.success("Item deleted successfully!");
     } catch (error) {

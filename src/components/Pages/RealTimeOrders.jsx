@@ -12,7 +12,7 @@ const RealTimeOrders = () => {
   const fetchCartData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/v1/customer/carts"
+        "https://baattak.onrender.com/api/v1/customer/carts"
       );
       const cartData = response.data.carts;
 
@@ -57,7 +57,7 @@ const RealTimeOrders = () => {
   const handleDeclineClick = async (order) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/v1/customer/carts/${order._id}`
+        `https://baattak.onrender.com/api/v1/customer/carts/${order._id}`
       );
       if (response.status === 200) {
         setOrders((prevOrders) => prevOrders.filter((o) => o._id !== order._id));
@@ -73,7 +73,7 @@ const RealTimeOrders = () => {
   const handleDoneClick = async (order) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/v1/customer/carts/move-to-history/${order._id}`
+        `https://baattak.onrender.com/api/v1/customer/carts/move-to-history/${order._id}`
       );
 
       if (response.status === 200) {

@@ -17,7 +17,7 @@ const Customers = () => {
   // Fetch customers from API using axios
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/customer/all');
+      const response = await axios.get('https://baattak.onrender.com/api/v1/customer/all');
       setCustomers(response.data); // Set the fetched customers data
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -41,13 +41,13 @@ const Customers = () => {
       if (editingCustomer) {
         // If we are editing an existing customer, make a PUT request
         await axios.put(
-          `http://localhost:5000/api/v1/customer/edit/${editingCustomer._id}`,
+          `https://baattak.onrender.com/api/v1/customer/edit/${editingCustomer._id}`,
           formData
         );
         toast.success('Customer updated successfully!');
       } else {
         // If we are adding a new customer, make a POST request
-        await axios.post('http://localhost:5000/api/v1/customer/register', formData);
+        await axios.post('https://baattak.onrender.com/api/v1/customer/register', formData);
         toast.success('Customer added successfully!');
       }
 
@@ -74,7 +74,7 @@ const Customers = () => {
       if (!showDeleteConfirm) return;
       const id = showDeleteConfirm; // Get the customer id from delete confirmation
       await axios.delete(
-        `http://localhost:5000/api/v1/customer/delete/${id}`
+        `https://baattak.onrender.com/api/v1/customer/delete/${id}`
       );
 
       // After successful delete, update the customers state

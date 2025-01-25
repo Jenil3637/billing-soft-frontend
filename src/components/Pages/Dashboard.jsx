@@ -17,7 +17,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const BASE_URL = 'http://localhost:5000/api/v1/customer'; // Set base URL here
+  const BASE_URL = 'https://baattak.onrender.com/api/v1/customer'; // Set base URL here
 
   useEffect(() => {
     const fetchDashboardData = async () => {

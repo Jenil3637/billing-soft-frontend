@@ -17,7 +17,7 @@ const Orders = () => {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/v1/customer/menuItems');
+        const response = await axios.get('https://baattak.onrender.com/api/v1/customer/menuItems');
         setMenuItems(response.data);
       } catch (error) {
         toast.error('Error fetching menu items. Please try again later.');

@@ -12,7 +12,7 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/v1/customer/orderHistories"
+          "https://baattak.onrender.com/api/v1/customer/orderHistories"
         );
         setOrders(response.data); // Assuming response data is an array
         setLoading(false);

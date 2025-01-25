@@ -48,6 +48,8 @@ import MenuEditor from '../src/components/Pages/MenuEditor'; // Import MenuEdito
 import OrderHistory from '../src/components/Pages/OrderHistory'; // Import OrderHistory page
 import Orders from '../src/components/Pages/Orders'; // Import Orders page
 import RealTimeOrders from '../src/components/Pages/RealTimeOrders';
+import SignupPage from './components/Pages/SignupPage';
+import LoginPage from './components/Pages/LoginPage';
 
 function App() {
   const notify = () => {
@@ -79,6 +81,8 @@ function App() {
             <Route path="/order-history" element={<OrderHistory />} />
             <Route path="/orders" element={<Orders />} />
             {/* Add a default route for the home page or fallback */}
+            {/* <Route path="/signup" element={<SignupPage />} /> */}
+            {/* <Route path="/login" element={<LoginPage />} /> */}
             <Route path="/" element={<Dashboard />} />
           </Routes>
         </div>
